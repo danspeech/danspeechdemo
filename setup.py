@@ -13,11 +13,11 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/rasmusafj/danspeech",
     packages=find_packages(),
+    include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",
         'Development Status :: 3 - Alpha',
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    scripts=['manage.py']
 )
