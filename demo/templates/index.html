@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+
+    {% load static %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Kings of DTU">
+    <title>DanSpeech | Demo </title>
+
+    <!-- Front end utils -->
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+    <link rel="stylesheet" href="{% static 'normalize.css' %}">
+    <link rel="stylesheet" href="{% static 'milligram.min.css' %}">
+    <link rel="stylesheet" href="{% static 'main.css' %}">
+
+    <!-- Recording utils -->
+    <link rel="stylesheet" href="{% static 'video-js.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'videojs.wavesurfer.css' %}" />
+    <link rel="stylesheet" href="{% static 'videojs.record.min.css' %}">
+
+    <script src="{% static 'video.min.js' %}"></script>
+    <script src="{% static 'RecordRTC.min.js' %}"></script>
+    <script src="{% static 'adapter-latest.js' %}"></script>
+    <script src="{% static 'wavesurfer.min.js' %}"></script>
+    <script src="{% static 'wavesurfer.microphone.min.js' %}"></script>
+    <script src="{% static 'videojs.wavesurfer.min.js' %}"></script>
+    <script src="{% static 'safari-workaround.js' %}"></script>
+
+    <script src="{% static 'videojs.record.min.js' %}"></script>
+
+    <style>
+    input[type="checkbox"]{
+        width: 16px; /*Desired width*/
+        height: 16px; /*Desired height*/
+    }
+    /* The Modal (background) */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed; /* Stay in place */
+      z-index: 9999; /* Sit on top */
+      padding-top: 100px; /* Location of the box */
+      left: 0;
+      top: 0;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgb(0,0,0); /* Fallback color */
+      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content */
+    .modal-content {
+      background-color: #fefefe;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+    }
+
+    /* The Close Button */
+    .close {
+      color: #aaaaaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: #000;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    /* change player background color */
+    #myAudio {
+      background-color: #FFEEFF;
+    }
+
+    .center {
+    margin-left: auto;
+    margin-right: auto;
+    display: block
+    }
+    </style>
+
+</head>
+<body>
+    <main class="wrapper">
+        <nav class="navigation" style="z-index: 999">
+				<section class="container">
+					<a class="navigation-title" href="#home">
+						<h1 class="title">DanSpeech</h1>
+					</a>
+					<ul class="navigation-list float-right">
+                        <li class="navigation-item">
+							<a class="navigation-link" href="/" data-popover>Home</a>
+						</li>
+						<li class="navigation-item">
+							<a class="navigation-link" href="#info" data-popover>Info</a>
+						</li>
+						<li class="navigation-item">
+							<a class="navigation-link" href="#kontakt" data-popover>Contact</a>
+						</li>
+					</ul>
+				</section>
+			</nav>
+        <header class="header" id="home">
+            <section class="container">
+                <h1>
+                    DanSpeech Demo
+                </h1>
+                <p class="description">
+                    This a demo demonstrating the DanSpeech tool.
+                </p>
+
+            </section>
+
+        </header>
+        <section class="container" id="recording">
+            <h1>
+                Demo
+            </h1>
+
+            <p id="tekst-beskrivelse">
+                <b>Choose configuration</b>
+            </p>
+
+
+            <div class="container">
+                <form action="update_config/" method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="column column-25">
+                            <p>DanSpeech model:</p>
+                        </div>
+                        <div class="column column-50">
+                        <select name="model_choice">
+                            <option value="0">DanSpeech</option>
+                            <option value="1">Baseline (no augmentations)</option>
+                            <option value="2">Baseline (augmentations)</option>
+                            <option value="3">1 convolutional layer</option>
+                            <option value="4">3 convolutional layers (32 filters)</option>
+                            <option value="5">3 convolutional layers (96 filters)</option>
+                            <option value="6">3 RNNs</option>
+                            <option value="7">7 RNNs</option>
+                            <option value="8">9 RNNs</option>
+                            <option value="9">400 hidden units</option>
+                            <option value="10">1200 hidden units</option>
+                            <option value="11">1600 hidden units</option>
+                            <option value="12">Transfer learning - 0 frozen layers</option>
+                            <option value="13">Transfer learning - 3 frozen layers</option>
+                            <option value="14">Pooled data model</option>
+                            <option value="15">English speech recognition</option>
+                        </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="column column-25">
+                            <p>Language model:</p>
+                        </div>
+                        <div class="column column-50">
+                        <select name="language_model">
+                            <option value="0">DSL 3-gram</option>
+                            <option value="1">DSL 5-gram</option>
+                            <option value="16">Greedy decoding</option>
+                            <option value="2">Wiki 3-gram</option>
+                            <option value="3">Wiki 5-gram</option>
+                            <option value="4">Leipzig 3-gram</option>
+                            <option value="5">Leipzig 5-gram</option>
+                            <option value="6">DSL + Wiki 3-gram</option>
+                            <option value="7">DSL + Wiki 5-gram</option>
+                            <option value="8">DSL + Leipzig 3-gram</option>
+                            <option value="9">DSL + Leipzig 5-gram</option>
+                            <option value="10">Wiki + Leipzig 3-gram</option>
+                            <option value="11">Wiki + Leipzig 5-gram</option>
+                            <option value="12">Combined corpora 3-gram</option>
+                            <option value="13">Combined corpora 5-gram</option>
+                            <option value="14">LibriSpeech 3-gram</option>
+                            <option value="15">LibriSpeech 4-gram</option>
+                        </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="column column-25">
+                            <p>Alpha:</p>
+                        </div>
+                        <div class="column column-40">
+                            <input name="alpha" style="width: 100%;" type="range" min="0" max="3" step="0.05" value="1"
+                                   class="slider" id="myRangeAlpha" oninput="changeInputValueAlpha(this.value)">
+                        </div>
+                        <div class="column-10">
+                            <input type="number" id="numberAlpha" min="0" max="3" step="0.05" value="1.0" onkeyup="changeRangeValueAlpha(this.value)"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="column column-25">
+                            <p>Beta:</p>
+                        </div>
+                        <div class="column column-40">
+                            <input name="beta" style="width: 100%;" type="range" min="0" max="3" step="0.05" value="1"
+                                   class="slider" id="myRangeBeta" oninput="changeInputValueBeta(this.value)">
+                        </div>
+                        <div class="column-10">
+                            <input type="number" id="numberBeta" min="0" max="3" step="0.05" value="1.0" onkeyup="changeRangeValueBeta(this.value)"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="column column-25">
+                            <p>Beam width:</p>
+                        </div>
+                        <div class="column column-40">
+                            <input name="beam" style="width: 100%;" type="range" min="1" max="128" step="1" value="16"
+                                   class="slider" id="myRangeBeam" oninput="changeInputValueBeam(this.value)">
+                        </div>
+                        <div class="column-10">
+                            <input type="number" id="numberBeam" min="1" max="128" step="1" value="1" onkeyup="changeRangeValueBeam(this.value)"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <button type="submit"> Update configuration</button>
+                    </div>
+                </form>
+            </div>
+
+            <audio id="myAudio" class="video-js vjs-default-skin center"></audio>
+            </br>
+            <button id="record-button" class="button">Record</button>
+            <input id="submitAudio" class="button" type="submit" value="Transcribe">
+            <input id="google" class="button" type="submit" value="Transcribe Google">
+
+            <p>Output</p>
+            <blockquote>
+                <p>
+                    <strong id="transcription" class="center">
+
+                    </strong>
+                </p>
+            </blockquote>
+        </section>
+        <section class="container" id="info">
+            <h1 class="">
+                Info
+            </h1>
+            <p>
+                DanSpeech is an open source danish speech recognition tool.
+            </p>
+        </section>
+        <section class="container" id="kontakt">
+            <h1 class="">
+                Contact
+            </h1>
+            <p>
+                If you have any inquiries, feel free to contact either one of the developers on mail.
+            </p>
+            <p>
+                <i>Martin Carsten Nielsen</i> </br> <a href = "mailto: mcnielsen4270@gmail.com">mcnielsen4270@gmail.com</a>
+            </p>
+            <p>
+                <i>Rasmus Arpe Fogh Jensen</i>  </br> <a href = "mailto: rasmus.arpe@gmail.com">rasmus.arpe@gmail.com</a>
+            </p>
+             <div class="row">
+                <div class="column">
+                    <p>
+
+                    </p>
+                    <p>
+
+                    </p>
+                </div>
+                <div class="column"></div>
+                <div class="column"></div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+
+    <script>
+        {% include 'demo.js' %}
+    </script>
+</body>
+</html>

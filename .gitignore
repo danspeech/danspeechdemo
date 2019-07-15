@@ -1,0 +1,15 @@
+
+.DS_Store
+
+__pycache__/
+
+.idea/
+
+audio_files/
+
+audio_files/google_key/danspeech_googlekey.json
+
+*.sqlite3
+
+*.webm
+*.wav
