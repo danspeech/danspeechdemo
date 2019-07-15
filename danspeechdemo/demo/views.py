@@ -13,7 +13,8 @@ from danspeech import Recognizer
 from danspeech.audio.resources import SpeechFile
 
 # global recognizer always running in backend
-recognizer = Recognizer()
+with_gpu = os.environ["DANSPEECH_GPU"] == "1"
+recognizer = Recognizer(with_gpu=with_gpu)
 
 
 def index(request):
