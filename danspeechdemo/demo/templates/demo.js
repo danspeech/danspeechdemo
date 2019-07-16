@@ -71,6 +71,11 @@ function createPlayer(event) {
 }
 
 
+$('#updateconfig').on('click', function () {
+    $("#log").append("</br>Updating configurations... If you've chosen a DanSpeech model or a " +
+        "language model not priorily used then check console for download status.");
+});
+
 $('#record-button').on('click', function () {
     if (player.record().isRecording()) {
         player.record().stop();
@@ -116,6 +121,32 @@ $('#google').on('click', function () {
     transcribe(true);
 });
 
+$('#submitMultipleFiles').on('click', function () {
+    var url = "{% url 'send_audio_filepath' %}";
+    var path = $('#path').val();
+    var savepath = $('#storeresultsin').val();
+    data = new FormData();
+    data.append('path', path);
+    data.append('savepath', savepath);
+    data.append('csrfmiddlewaretoken', "{{ csrf_token }}");
+    $("#log").append("</br> Processing directory... Check the console running the demo for status.");
+    $.ajax({
+        url: url,
+        method: 'post',
+        data: data,
+        success: function (data) {
+            for (i in data.transcriptions) {
+                $("#log").append("</br>" + data.fnames[i] + ": " + data.transcriptions[i])
+            }
+        },
+        error: function () {
+            alert("Something went wrong.");
+        },
+        cache: false,
+        contentType: false,
+        processData: false
+    });
+});
 
 function sendAudio() {
     var hasRecorded = false;

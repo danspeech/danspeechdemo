@@ -12,8 +12,12 @@ from .models_mapping import get_danspeech_model, get_danspeech_lm
 from danspeech import Recognizer
 from danspeech.audio.resources import SpeechFile
 
+if "DANSPEECH_GPU" in os.environ:
+    with_gpu = os.environ["DANSPEECH_GPU"] == "1"
+else:
+    with_gpu=False
+
 # global recognizer always running in backend
-with_gpu = os.environ["DANSPEECH_GPU"] == "1"
 recognizer = Recognizer(with_gpu=with_gpu)
 
 
@@ -72,7 +76,7 @@ def encode_audio():
 
 def transcribe(request):
     audio = encode_audio()
-    transcription = recognizer.recognize_danspeech(audio, show_all=False)
+    transcription = recognizer.recognize(audio, show_all=False)
     return JsonResponse({
         'success': True,
         'trans': transcription
@@ -85,4 +89,37 @@ def transcribe_google(request):
     return JsonResponse({
         'success': True,
         'trans': transcription
+    })
+
+
+def send_audio_filepath(request):
+    path = request.POST["path"]
+    save_path = request.POST["savepath"]
+    files = [f for f in os.listdir(path) if f[-3:] == "wav" or f[-4:] == "flac"]
+    transcriptions = []
+    fnames = []
+
+    if save_path:
+        save_file = open(save_path, "w", encoding="utf-8")
+
+    for i, f in enumerate(files):
+        with SpeechFile(filepath=os.path.join(path, f)) as source:
+            audio = recognizer.record(source)
+
+        transcription = recognizer.recognize(audio, show_all=False)
+        transcriptions.append(transcription)
+        fnames.append(f)
+
+        if save_path:
+            save_file.write(f + ": " + transcription + "\n")
+
+        print("{0}/{1} files".format(i+1, len(files)))
+
+    if save_path:
+        save_file.close()
+
+    return JsonResponse({
+        'success': True,
+        'transcriptions': transcriptions,
+        'fnames': fnames
     })
