@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+
+    {% load static %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Kings of DTU">
+    <title>DanSpeech | Demo </title>
+
+    <!-- Front end utils -->
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+    <link rel="stylesheet" href="{% static 'normalize.css' %}">
+    <link rel="stylesheet" href="{% static 'milligram.min.css' %}">
+    <link rel="stylesheet" href="{% static 'main.css' %}">
+
+    <!-- Recording utils -->
+    <link rel="stylesheet" href="{% static 'video-js.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'videojs.wavesurfer.css' %}"/>
+    <link rel="stylesheet" href="{% static 'videojs.record.min.css' %}">
+
+    <script src="{% static 'video.min.js' %}"></script>
+    <script src="{% static 'recordRTC.min.js' %}"></script>
+    <script src="{% static 'adapter-latest.js' %}"></script>
+    <script src="{% static 'wavesurfer.min.js' %}"></script>
+    <script src="{% static 'wavesurfer.microphone.min.js' %}"></script>
+    <script src="{% static 'videojs.wavesurfer.min.js' %}"></script>
+    <script src="{% static 'safari-workaround.js' %}"></script>
+
+    <script src="{% static 'videojs.record.min.js' %}"></script>
+
+    <style>
+        input[type="checkbox"] {
+            width: 16px; /*Desired width*/
+            height: 16px; /*Desired height*/
+        }
+
+        /* change player background color */
+        #myAudio {
+            background-color: #FFEEFF;
+        }
+
+        .center {
+            margin-left: auto;
+            margin-right: auto;
+            display: block
+        }
+    </style>
+
+</head>
+<body>
+<main class="wrapper">
+    {% include "nav_module.html" %}
+    {% include "home.html" %}
+    <section class="container" id="recording">
+        <h1>
+            Stream of audio
+        </h1>
+        <p>
+            Transcribe audio directly from your microphone. DanSpeech will spawn a background thread listening
+            to your microphone and will continuosly transcribe the audio.
+        </p>
+
+        <div id="microphones">
+            <p> <b>Pick a microphone to use</b></p> </br>
+        </div>
+        <div id="toggle-stream"></div>
+
+        <h4>Log:</h4>
+        <div style="overflow-y: scroll; height:400px;">
+
+            <p id="log">
+
+            </p>
+
+        </div>
+    </section>
+    {% include "info.html" %}
+    {% include "kontakt.html" %}
+
+</main>
+
+<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+
+<script>
+    {% include 'demo.js' %}
+</script>
+
+<script>
+    if ({{ mic_list|safe }} != null) {
+        add_microphone_buttons({{ mic_list|safe }});
+    }
+
+    function start_transcribing(){
+        var url = "{% url 'start_streaming' %}";
+        var data = new FormData();
+        data.append('csrfmiddlewaretoken', "{{ csrf_token }}");
+        $.ajax({
+            url: url,
+            method: 'post',
+            data: data,
+            success: function (data) {
+            },
+            error: function () {
+                alert("Something went wrong.");
+            },
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+
+        $("#stream-toogle").vagit lue("Stop streaming");
+    }
+
+    function button_clicked(value) {
+        var url = "{% url 'update_microphone' %}";
+        var data = new FormData();
+        data.append('mic_id', value);
+        data.append('csrfmiddlewaretoken', "{{ csrf_token }}");
+        $.ajax({
+            url: url,
+            method: 'post',
+            data: data,
+            success: function (data) {
+                $("#microphones").hide();
+                var r = $('<input/>', { type: "button", id: "stream-toogle", value: "Start streaming", onclick: "start_transcribing()"});
+                $("#toggle-stream").append(r);
+            },
+            error: function () {
+                alert("Something went wrong.");
+            },
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+
+    }
+
+    function add_microphone_buttons(mic_list){
+
+        for (i = 0; i < mic_list.length; i++) {
+            console.log(mic_list[i]);
+            var r = $('<input/>', { type: "button", value: mic_list[i][1], onclick: "button_clicked(" + mic_list[i][0] + ")"});
+            $("#microphones").append(r);
+        }
+    }
+
+
+</script>
+
+</body>
+</html>

@@ -3,6 +3,7 @@ from django.template import loader
 import subprocess
 import settings
 import os
+import json
 
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -10,16 +11,17 @@ from django.core.files.storage import default_storage
 from .models_mapping import get_danspeech_model, get_danspeech_lm
 
 from danspeech import Recognizer
-from danspeech.audio.resources import SpeechFile
+from danspeech.audio.resources import load_audio_wavPCM, load_audio, Microphone
 
 if "DANSPEECH_GPU" in os.environ:
     with_gpu = os.environ["DANSPEECH_GPU"] == "1"
 else:
-    with_gpu=False
+    with_gpu = False
 
 # global recognizer always running in backend
 recognizer = Recognizer(with_gpu=with_gpu)
-
+transcriptions = []
+counter = 0
 
 def index(request):
     template = loader.get_template('index.html')
@@ -30,6 +32,55 @@ def index(request):
     recognizer.update_model(model)
 
     return HttpResponse(template.render({}, request))
+
+
+def multi(request):
+    template = loader.get_template('multi.html')
+    return HttpResponse(template.render({}, request))
+
+
+def stream(request):
+    template = loader.get_template('stream.html')
+    from danspeech.pretrained_models import StreamingRNN
+    model = StreamingRNN()
+    recognizer.update_model(model)
+    microphones = [str(m) for m in Microphone.list_microphone_names()]
+    mic_list_with_numbers = list(zip(range(len(microphones)), microphones))
+    mic_list = json.dumps(mic_list_with_numbers)
+    return HttpResponse(template.render({"mic_list": mic_list}, request))
+
+
+def update_microphone(request):
+    mic_id = int(request.POST["mic_id"])
+    recognizer.microphone = Microphone(sampling_rate=16000, device_index=int(mic_id))
+    print("Updated mic")
+    return JsonResponse({
+        'success': True,
+    })
+
+
+def start_streaming(request):
+    with recognizer.microphone as source:
+        print("Adjusting for background noise")
+        recognizer.adjust_for_ambient_noise(source)
+
+    generator = recognizer.microphone_streaming(recognizer.microphone)
+    while True:
+        try:
+            is_last, trans = next(generator)
+            # If the transcription is empty, it means that the energy level required for data
+            # was passed, but nothing was predicted.
+            if trans:
+                print(trans)
+        except StopIteration:
+            break
+
+    recognizer.stop_microphone_streaming()
+
+    return JsonResponse({
+        'success': True,
+    })
+
 
 
 def preprocess_webm(request):
@@ -67,25 +118,9 @@ def update_config(request):
     return HttpResponse(status=204)
 
 
-def encode_audio():
-    with SpeechFile(filepath=os.path.join(settings.MEDIA_ROOT, "tmp.wav")) as source:
-        audio = recognizer.record(source)
-
-    return audio
-
-
 def transcribe(request):
-    audio = encode_audio()
+    audio = load_audio_wavPCM(path=os.path.join(settings.MEDIA_ROOT, "tmp.wav"))
     transcription = recognizer.recognize(audio, show_all=False)
-    return JsonResponse({
-        'success': True,
-        'trans': transcription
-    })
-
-
-def transcribe_google(request):
-    audio = encode_audio()
-    transcription = recognizer.recognize_google(audio, show_all=False)
     return JsonResponse({
         'success': True,
         'trans': transcription
@@ -96,6 +131,7 @@ def send_audio_filepath(request):
     path = request.POST["path"]
     save_path = request.POST["savepath"]
     files = [f for f in os.listdir(path) if f[-3:] == "wav" or f[-4:] == "flac"]
+    print(files)
     transcriptions = []
     fnames = []
 
@@ -103,9 +139,8 @@ def send_audio_filepath(request):
         save_file = open(save_path, "w", encoding="utf-8")
 
     for i, f in enumerate(files):
-        with SpeechFile(filepath=os.path.join(path, f)) as source:
-            audio = recognizer.record(source)
 
+        audio = load_audio(path=os.path.join(path, f))
         transcription = recognizer.recognize(audio, show_all=False)
         transcriptions.append(transcription)
         fnames.append(f)
@@ -113,7 +148,7 @@ def send_audio_filepath(request):
         if save_path:
             save_file.write(f + ": " + transcription + "\n")
 
-        print("{0}/{1} files".format(i+1, len(files)))
+        print("{0}/{1} files processed".format(i + 1, len(files)))
 
     if save_path:
         save_file.close()

@@ -36,6 +36,7 @@
             height: 16px; /*Desired height*/
         }
 
+
         /* change player background color */
         #myAudio {
             background-color: #FFEEFF;
@@ -56,21 +57,49 @@
 
     <section class="container" id="recording">
         <h1>
-            Record and transcribe
+            Multiple files
         </h1>
+
+        <p id="tekst-beskrivelse">
+            <b>Transcribe multiple files from a directory </b>
+        </p>
         <p>
-            Here you can record speech and transcribe it using DanSpeech. You can choose any acoustic model and language
-            model supported by DanSpeech further down the page (configuration).
+            To test DanSpeech on multiple files, you may specify a full local path to the directory containing
+            the audio files of speech e.g. "Users/mtn/soundfiles". Files need to be .wav or .flac fileformat.
+        </p>
+        <p>
+            You may also choose the path to a .txt file where the transcription output will be stored for each file.
+            If not chosen, the output will only be shown in the log container on the webpage.
         </p>
 
-        <audio id="myAudio" class="video-js vjs-default-skin center"></audio>
-        </br>
-        <button id="record-button" class="button">Record</button>
-        <input id="submitAudio" class="button" type="submit" value="Transcribe">
 
+        <div class="row">
+            <div class="column column-25">
+                <p>Path to multiple files:</p>
+            </div>
+            <div class="column column-75">
+                <input id="path" type="text" placeholder="e.g. Users/mtn/soundfiles"><br>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column column-25">
+                <p>(optional) Store result in: </p>
+            </div>
+            <div class="column column-75">
+                <input id="storeresultsin" type="text" placeholder="e.g. Users/mtn/results/test.txt"><br>
+            </div>
+        </div>
 
-        <p>Output:</p>
-        <blockquote><strong id="transcription"></strong></blockquote>
+        <input id="submitMultipleFiles" class="button" type="submit" value="Transcribe multiple files">
+
+        <h4>Log:</h4>
+        <div style="overflow-y: scroll; height:400px;">
+
+            <p id="log">
+
+            </p>
+
+        </div>
 
         <p id="tekst-beskrivelse">
             <b>Choose configuration</b>
@@ -182,6 +211,7 @@
     </section>
     {% include "info.html" %}
     {% include "kontakt.html" %}
+
 </main>
 
 <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>

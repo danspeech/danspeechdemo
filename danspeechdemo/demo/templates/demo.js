@@ -90,14 +90,11 @@ $('#record-button').on('click', function () {
 });
 
 $('#submitAudio').on('click', function () {
-    transcribe(false);
+    transcribe();
 });
 
-function transcribe(use_google) {
+function transcribe() {
     var url = "{% url 'transcribe' %}";
-    if (use_google) {
-        url = "{% url 'transcribe_google' %}";
-    }
     data = new FormData();
     data.append('csrfmiddlewaretoken', "{{ csrf_token }}");
     $.ajax({
@@ -116,10 +113,6 @@ function transcribe(use_google) {
         processData: false
     });
 }
-
-$('#google').on('click', function () {
-    transcribe(true);
-});
 
 $('#submitMultipleFiles').on('click', function () {
     var url = "{% url 'send_audio_filepath' %}";
