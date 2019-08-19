@@ -1,4 +1,4 @@
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.template import loader
 import subprocess
 import settings
@@ -47,6 +47,7 @@ def stream(request):
     microphones = [str(m) for m in Microphone.list_microphone_names()]
     mic_list_with_numbers = list(zip(range(len(microphones)), microphones))
     mic_list = json.dumps(mic_list_with_numbers)
+    print(mic_list)
     return HttpResponse(template.render({"mic_list": mic_list}, request))
 
 
@@ -59,11 +60,7 @@ def update_microphone(request):
     })
 
 
-def start_streaming(request):
-    with recognizer.microphone as source:
-        print("Adjusting for background noise")
-        recognizer.adjust_for_ambient_noise(source)
-
+def streaming_generator():
     generator = recognizer.microphone_streaming(recognizer.microphone)
     while True:
         try:
@@ -71,16 +68,31 @@ def start_streaming(request):
             # If the transcription is empty, it means that the energy level required for data
             # was passed, but nothing was predicted.
             if trans:
-                print(trans)
+                if is_last:
+                    yield trans
+                else:
+                    yield trans
+
         except StopIteration:
             break
 
-    recognizer.stop_microphone_streaming()
 
+def start_streaming(request):
+    with recognizer.microphone as source:
+        print("Adjusting for background noise")
+        recognizer.adjust_for_ambient_noise(source)
+    stream_gen = streaming_generator()
+    response = StreamingHttpResponse(stream_gen, status=200, content_type='text/event-stream')
+    response['Cache-Control'] = 'no-cache'
+
+    return response
+
+
+def stop_streaming(request):
+    recognizer.stop_microphone_streaming()
     return JsonResponse({
         'success': True,
     })
-
 
 
 def preprocess_webm(request):

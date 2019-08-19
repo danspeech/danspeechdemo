@@ -12,4 +12,5 @@ urlpatterns = [
     path('send_audio_filepath/', views.send_audio_filepath, name='send_audio_filepath'),
     path('update_microphone/', views.update_microphone, name='update_microphone'),
     path('start_streaming/', views.start_streaming, name='start_streaming'),
+    path('stop_streaming/', views.stop_streaming, name='stop_streaming'),
 ]
