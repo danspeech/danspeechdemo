@@ -41,7 +41,7 @@ def multi(request):
 
 def stream(request):
     template = loader.get_template('stream.html')
-    from danspeech.pretrained_models import StreamingRNN
+    from danspeech.pretrained_models import StreamingRNNLarge
     model = StreamingRNN()
     recognizer.update_model(model)
     microphones = [str(m) for m in Microphone.list_microphone_names()]
