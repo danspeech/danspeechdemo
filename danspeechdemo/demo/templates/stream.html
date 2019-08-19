@@ -67,14 +67,23 @@
         </div>
         <div id="toggle-stream"></div>
 
-        <h4>Log:</h4>
+        <h4>Streaming output:</h4>
         <div style="overflow-y: scroll; height:400px;">
 
-            <p id="log">
+            <div id="log">
 
-            </p>
+            </div>
 
         </div>
+        <h4>Final output:</h4>
+        <div style="overflow-y: scroll; height:400px;">
+
+            <div id="output">
+
+            </div>
+
+        </div>
+
     </section>
     {% include "info.html" %}
     {% include "kontakt.html" %}
@@ -92,25 +101,64 @@
         add_microphone_buttons({{ mic_list|safe }});
     }
 
-    function start_transcribing(){
-        var url = "{% url 'start_streaming' %}";
-        var data = new FormData();
-        data.append('csrfmiddlewaretoken', "{{ csrf_token }}");
-        $.ajax({
-            url: url,
-            method: 'post',
-            data: data,
-            success: function (data) {
-            },
-            error: function () {
-                alert("Something went wrong.");
-            },
-            cache: false,
-            contentType: false,
-            processData: false
-        });
+    function hasUpperLetter(t) {
+        return t.toLowerCase() !== t;
+    }
 
-        $("#stream-toogle").vagit lue("Stop streaming");
+    function start_transcribing(){
+
+        if ($("#stream-toogle").val() === "Stop streaming") {
+            var url = "{% url 'stop_streaming' %}";
+            var data = new FormData();
+            data.append('csrfmiddlewaretoken', "{{ csrf_token }}");
+            $.ajax({
+                url: url,
+                method: 'post',
+                data: data,
+                success: function (data) {
+                   $("#stream-toogle").val("Start streaming")
+                },
+                error: function () {
+                    alert("Something went wrong.");
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+        } else {
+            var url = "{% url 'start_streaming' %}";
+            var iterating_test = "";
+            var str_iterator = 0;
+
+            $("#log").empty();
+            $("#output").empty();
+            let xmlhttp = new XMLHttpRequest();
+            function updateProgress (oEvent) {
+                let p = document.createElement('p');
+                p.setAttribute("style", "margin: 0; padding: 0;");
+                var temp_text = oEvent.target.responseText.substr(str_iterator);
+                str_iterator += temp_text.length;
+
+                if (hasUpperLetter(temp_text)){
+                    let text = document.createTextNode(temp_text);
+                    p.appendChild(text);
+                    document.getElementById('output').appendChild(p);
+                    $("#log").empty();
+                    iterating_test = "";
+                } else {
+                    iterating_test += temp_text;
+                    let text = document.createTextNode(iterating_test);
+                    p.appendChild(text);
+                    document.getElementById('log').appendChild(p);
+                }
+
+            }
+            xmlhttp.addEventListener('progress', updateProgress, false);
+            xmlhttp.open("get", url, true);
+            xmlhttp.send();
+
+            $("#stream-toogle").val("Stop streaming");
+        }
     }
 
     function button_clicked(value) {
@@ -145,7 +193,6 @@
             $("#microphones").append(r);
         }
     }
-
 
 </script>
 
