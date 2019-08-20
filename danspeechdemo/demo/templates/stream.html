@@ -55,16 +55,12 @@
     {% include "home.html" %}
     <section class="container" id="recording">
         <h1>
-            Stream of audio
+            Folketinget demo
         </h1>
         <p>
-            Transcribe audio directly from your microphone. DanSpeech will spawn a background thread listening
-            to your microphone and will continuosly transcribe the audio.
+            Denne demo transkribere en video fra folketinget
         </p>
 
-        <div id="microphones">
-            <p> <b>Pick a microphone to use</b></p> </br>
-        </div>
         <div id="toggle-stream"></div>
 
         <h4>Streaming output:</h4>
@@ -76,7 +72,7 @@
 
         </div>
         <h4>Final output:</h4>
-        <div style="overflow-y: scroll; height:400px;">
+        <div id="output-scroll" style="overflow-y: scroll; height:200px;">
 
             <div id="output">
 
@@ -97,12 +93,15 @@
 </script>
 
 <script>
-    if ({{ mic_list|safe }} != null) {
-        add_microphone_buttons({{ mic_list|safe }});
-    }
 
     function hasUpperLetter(t) {
         return t.toLowerCase() !== t;
+    }
+
+
+    function updateScroll(){
+        var element = document.getElementById("output-scroll");
+        element.scrollTop = element.scrollHeight;
     }
 
     function start_transcribing(){
@@ -143,6 +142,7 @@
                     let text = document.createTextNode(temp_text);
                     p.appendChild(text);
                     document.getElementById('output').appendChild(p);
+                    updateScroll();
                     $("#log").empty();
                     iterating_test = "";
                 } else {
@@ -161,38 +161,9 @@
         }
     }
 
-    function button_clicked(value) {
-        var url = "{% url 'update_microphone' %}";
-        var data = new FormData();
-        data.append('mic_id', value);
-        data.append('csrfmiddlewaretoken', "{{ csrf_token }}");
-        $.ajax({
-            url: url,
-            method: 'post',
-            data: data,
-            success: function (data) {
-                $("#microphones").hide();
-                var r = $('<input/>', { type: "button", id: "stream-toogle", value: "Start streaming", onclick: "start_transcribing()"});
-                $("#toggle-stream").append(r);
-            },
-            error: function () {
-                alert("Something went wrong.");
-            },
-            cache: false,
-            contentType: false,
-            processData: false
-        });
+    var r = $('<input/>', { type: "button", id: "stream-toogle", value: "Start streaming", onclick: "start_transcribing()"});
+    $("#toggle-stream").append(r);
 
-    }
-
-    function add_microphone_buttons(mic_list){
-
-        for (i = 0; i < mic_list.length; i++) {
-            console.log(mic_list[i]);
-            var r = $('<input/>', { type: "button", value: mic_list[i][1], onclick: "button_clicked(" + mic_list[i][0] + ")"});
-            $("#microphones").append(r);
-        }
-    }
 
 </script>
 

@@ -77,7 +77,25 @@ def streaming_generator():
             break
 
 
+def streaming_generator_folketinget():
+    generator = recognizer.listen_video()
+    while True:
+        try:
+            is_last, trans = next(generator)
+            # If the transcription is empty, it means that the energy level required for data
+            # was passed, but nothing was predicted.
+            if trans:
+                if is_last:
+                    yield trans
+                else:
+                    yield trans
+
+        except StopIteration:
+            break
+
 def start_streaming(request):
+
+    """
     with recognizer.microphone as source:
         print("Adjusting for background noise")
         recognizer.adjust_for_ambient_noise(source)
@@ -86,11 +104,15 @@ def start_streaming(request):
     response = StreamingHttpResponse(stream_gen, status=200, content_type='text/event-stream')
     response['Cache-Control'] = 'no-cache'
     print("Talk now")
+    """
+    stream_gen = streaming_generator_folketinget()
+    response = StreamingHttpResponse(stream_gen, status=200, content_type='text/event-stream')
+    response['Cache-Control'] = 'no-cache'
     return response
 
 
 def stop_streaming(request):
-    recognizer.stop_microphone_streaming()
+    recognizer.stop_video_stream()
     return JsonResponse({
         'success': True,
     })
