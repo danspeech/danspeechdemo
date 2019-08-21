@@ -78,10 +78,11 @@ def streaming_generator():
 
 
 def start_streaming(request):
+    """
     with recognizer.microphone as source:
         print("Adjusting for background noise")
         recognizer.adjust_for_ambient_noise(source)
-
+    """
     stream_gen = streaming_generator()
     response = StreamingHttpResponse(stream_gen, status=200, content_type='text/event-stream')
     response['Cache-Control'] = 'no-cache'
