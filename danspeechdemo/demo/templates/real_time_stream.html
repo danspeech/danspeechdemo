@@ -66,8 +66,17 @@
             <p> <b>Pick a microphone to use</b></p> </br>
         </div>
         <div id="toggle-stream"></div>
+
         <h4>Streaming output:</h4>
-        <div id="output-scroll" style="overflow-y: scroll; height:250px;">
+        <div style="overflow-y: scroll; height:400px;">
+
+            <div id="log">
+
+            </div>
+
+        </div>
+        <h4>Final output:</h4>
+        <div style="overflow-y: scroll; height:400px;">
 
             <div id="output">
 
@@ -75,7 +84,6 @@
 
         </div>
 
-        {% include "model_config.html" %}
     </section>
     {% include "info.html" %}
     {% include "kontakt.html" %}
@@ -89,20 +97,16 @@
 </script>
 
 <script>
-
-    var is_stopped = true;
-
     if ({{ mic_list|safe }} != null) {
         add_microphone_buttons({{ mic_list|safe }});
     }
 
-    function updateScroll(){
-        var element = document.getElementById("output-scroll");
-        element.scrollTop = element.scrollHeight;
+    function hasUpperLetter(t) {
+        return t.toLowerCase() !== t;
     }
 
     function start_transcribing(){
-        console.log("Am in here???")
+
         if ($("#stream-toogle").val() === "Stop streaming") {
             var url = "{% url 'stop_streaming' %}";
             var data = new FormData();
@@ -112,13 +116,6 @@
                 method: 'post',
                 data: data,
                 success: function (data) {
-                    setTimeout(function () {
-                        var p = document.createElement('p');
-                        p.setAttribute("style", "margin: 0; padding: 0;");
-                        var text = document.createTextNode("Terminating streaming... Please make sound for background thread to die.");
-                        p.appendChild(text);
-                        document.getElementById('output').appendChild(p);
-                    }, 2500);
                    $("#stream-toogle").val("Start streaming")
                 },
                 error: function () {
@@ -130,38 +127,37 @@
             });
         } else {
             var url = "{% url 'start_streaming' %}";
-            $("#output").empty();
-            var p = document.createElement('p');
-            p.setAttribute("style", "margin: 0; padding: 0;");
-            var text = document.createTextNode("Talk for 5 seconds to adjust silence detection...");
-            p.appendChild(text);
-            document.getElementById('output').appendChild(p);
-
+            var iterating_test = "";
             var str_iterator = 0;
 
+            $("#log").empty();
+            $("#output").empty();
             let xmlhttp = new XMLHttpRequest();
             function updateProgress (oEvent) {
                 let p = document.createElement('p');
                 p.setAttribute("style", "margin: 0; padding: 0;");
                 var temp_text = oEvent.target.responseText.substr(str_iterator);
                 str_iterator += temp_text.length;
-                let text = document.createTextNode(temp_text);
-                p.appendChild(text);
-                document.getElementById('output').appendChild(p);
-                updateScroll()
+
+                if (hasUpperLetter(temp_text)){
+                    let text = document.createTextNode(temp_text);
+                    p.appendChild(text);
+                    document.getElementById('output').appendChild(p);
+                    $("#log").empty();
+                    iterating_test = "";
+                } else {
+                    iterating_test += temp_text;
+                    let text = document.createTextNode(iterating_test);
+                    p.appendChild(text);
+                    document.getElementById('log').appendChild(p);
                 }
+
+            }
             xmlhttp.addEventListener('progress', updateProgress, false);
             xmlhttp.open("get", url, true);
             xmlhttp.send();
 
             $("#stream-toogle").val("Stop streaming");
-            setTimeout(function () {
-                var p = document.createElement('p');
-                p.setAttribute("style", "margin: 0; padding: 0;");
-                var text = document.createTextNode("Now speak! Silence will give transcription.");
-                p.appendChild(text);
-                document.getElementById('output').appendChild(p);
-            }, 5000);
         }
     }
 

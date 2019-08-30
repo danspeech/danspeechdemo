@@ -59,8 +59,8 @@
             Record and transcribe
         </h1>
         <p>
-            Here you can record speech and transcribe it using DanSpeech. You can choose any acoustic model and language
-            model supported by DanSpeech further down the page (configuration).
+            Record speech and transcribe it using DanSpeech. You can choose any DeepSpeech 2 model
+            and any language model supported by DanSpeech further down the page (see configuration).
         </p>
 
         <audio id="myAudio" class="video-js vjs-default-skin center"></audio>
@@ -72,113 +72,8 @@
         <p>Output:</p>
         <blockquote><strong id="transcription"></strong></blockquote>
 
-        <p id="tekst-beskrivelse">
-            <b>Choose configuration</b>
-        </p>
-        <p>
-            Note: Choosing a DanSpeech model or a language model not used before will download
-            the model into ~/.danspeech/models and ~/.danspeech/lms, respectively.
-        </p>
+        {% include "model_config.html" %}
 
-
-        <div class="container">
-            <form action="update_config/" method="post">
-                {% csrf_token %}
-                <div class="row">
-                    <div class="column column-25">
-                        <p>DanSpeech model:</p>
-                    </div>
-                    <div class="column column-50">
-                        <select name="model_choice">
-                            <option value="0">DanSpeech</option>
-                            <option value="1">Baseline (no augmentations)</option>
-                            <option value="2">Baseline (augmentations)</option>
-                            <option value="3">1 convolutional layer</option>
-                            <option value="4">3 convolutional layers (32 filters)</option>
-                            <option value="5">3 convolutional layers (96 filters)</option>
-                            <option value="6">3 RNNs</option>
-                            <option value="7">7 RNNs</option>
-                            <option value="8">9 RNNs</option>
-                            <option value="9">400 hidden units</option>
-                            <option value="10">1200 hidden units</option>
-                            <option value="11">1600 hidden units</option>
-                            <option value="12">Transfer learning - 0 frozen layers</option>
-                            <option value="13">Transfer learning - 3 frozen layers</option>
-                            <option value="14">Pooled data model</option>
-                            <option value="15">English speech recognition</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="column column-25">
-                        <p>Language model:</p>
-                    </div>
-                    <div class="column column-50">
-                        <select name="language_model">
-                            <option value="0">DSL 3-gram</option>
-                            <option value="1">DSL 5-gram</option>
-                            <option value="16">Greedy decoding</option>
-                            <option value="2">Wiki 3-gram</option>
-                            <option value="3">Wiki 5-gram</option>
-                            <option value="4">Leipzig 3-gram</option>
-                            <option value="5">Leipzig 5-gram</option>
-                            <option value="6">DSL + Wiki 3-gram</option>
-                            <option value="7">DSL + Wiki 5-gram</option>
-                            <option value="8">DSL + Leipzig 3-gram</option>
-                            <option value="9">DSL + Leipzig 5-gram</option>
-                            <option value="10">Wiki + Leipzig 3-gram</option>
-                            <option value="11">Wiki + Leipzig 5-gram</option>
-                            <option value="12">Combined corpora 3-gram</option>
-                            <option value="13">Combined corpora 5-gram</option>
-                            <option value="14">LibriSpeech 3-gram</option>
-                            <option value="15">LibriSpeech 4-gram</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="column column-25">
-                        <p>Alpha:</p>
-                    </div>
-                    <div class="column column-40">
-                        <input name="alpha" style="width: 100%;" type="range" min="0" max="3" step="0.05" value="1"
-                               class="slider" id="myRangeAlpha" oninput="changeInputValueAlpha(this.value)">
-                    </div>
-                    <div class="column-10">
-                        <input type="number" id="numberAlpha" min="0" max="3" step="0.05" value="1.0"
-                               onkeyup="changeRangeValueAlpha(this.value)"/>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="column column-25">
-                        <p>Beta:</p>
-                    </div>
-                    <div class="column column-40">
-                        <input name="beta" style="width: 100%;" type="range" min="0" max="3" step="0.05" value="1"
-                               class="slider" id="myRangeBeta" oninput="changeInputValueBeta(this.value)">
-                    </div>
-                    <div class="column-10">
-                        <input type="number" id="numberBeta" min="0" max="3" step="0.05" value="1.0"
-                               onkeyup="changeRangeValueBeta(this.value)"/>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="column column-25">
-                        <p>Beam width:</p>
-                    </div>
-                    <div class="column column-40">
-                        <input name="beam" style="width: 100%;" type="range" min="1" max="128" step="1" value="16"
-                               class="slider" id="myRangeBeam" oninput="changeInputValueBeam(this.value)">
-                    </div>
-                    <div class="column-10">
-                        <input type="number" id="numberBeam" min="1" max="128" step="1" value="1"
-                               onkeyup="changeRangeValueBeam(this.value)"/>
-                    </div>
-                </div>
-                <div class="row">
-                    <button type="submit" id="updateconfig"> Update configuration</button>
-                </div>
-            </form>
-        </div>
     </section>
     {% include "info.html" %}
     {% include "kontakt.html" %}

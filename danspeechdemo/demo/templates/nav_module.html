@@ -4,7 +4,7 @@
             <h1 class="title">DanSpeech</h1>
         </a>
 
-        <ul class="navigation-list float-left">
+        <ul class="navigation-list float-right">
             <li class="navigation-item">
                 <a class="navigation-link" href="/" data-popover>Record</a>
             </li>
@@ -14,17 +14,11 @@
             <li class="navigation-item">
                 <a class="navigation-link" href="{% url 'stream' %}" data-popover>Stream</a>
             </li>
-        </ul>
-
-        <ul class="navigation-list float-right">
             <li class="navigation-item">
-                <a class="navigation-link" href="/" data-popover>Home</a>
+                <a class="navigation-link" href="{% url 'stream' %}" data-popover>Real-time stream</a>
             </li>
             <li class="navigation-item">
-                <a class="navigation-link" href="#info" data-popover>Info</a>
-            </li>
-            <li class="navigation-item">
-                <a class="navigation-link" href="#kontakt" data-popover>Contact</a>
+                <a class="navigation-link" href="{% url 'stream' %}" data-popover>Folketinget example</a>
             </li>
         </ul>
     </section>
