@@ -236,11 +236,9 @@ def streaming_generator():
         except StopIteration:
             break
 
+
 def real_time_stream(request):
     template = loader.get_template('real_time_stream.html')
-    from danspeech.pretrained_models import CPUStreamingRNN
-    model = CPUStreamingRNN()
-    recognizer.update_model(model)
     microphones = [str(m) for m in Microphone.list_microphone_names()]
     mic_list_with_numbers = list(zip(range(len(microphones)), microphones))
     mic_list = json.dumps(mic_list_with_numbers)
@@ -248,20 +246,39 @@ def real_time_stream(request):
     return HttpResponse(template.render({"mic_list": mic_list}, request))
 
 
+def get_ds_generator(generator):
+    while True:
+        try:
+            is_last, trans = next(generator)
+            if trans:
+                if is_last:
+                    yield trans.capitalize() + "."
+                else:
+                    yield trans
+
+        except StopIteration:
+            break
+
+
 def start_real_time_streaming(request):
+    from danspeech.pretrained_models import CPUStreamingRNN
+    from danspeech.pretrained_models import TestModel
+    model = CPUStreamingRNN()
+    secondary_model = TestModel()
+    recognizer.enable_real_time_streaming(streaming_model=model, string_parts=True, secondary_model=secondary_model)
+
     with recognizer.microphone as source:
-        print("Adjusting for background noise")
+        print("Adjusting for background noise. Keep talking!")
         recognizer.adjust_for_speech(source, duration=5)
 
-    recognizer.enable_real_time_streaming()
-    generator = recognizer.streaming(recognizer.microphone)
-    response = StreamingHttpResponse(generator, status=200, content_type='text/event-stream')
+    generator = recognizer.real_time_streaming(source=recognizer.microphone)
+    response = StreamingHttpResponse(get_ds_generator(generator), status=200, content_type='text/event-stream')
     response['Cache-Control'] = 'no-cache'
     return response
 
 
-def stop_real_time__streaming(request):
-    recognizer.disable_streaming()
+def stop_real_time_streaming(request):
+    recognizer.disable_real_time_streaming()
     return JsonResponse({
         'success': True,
     })

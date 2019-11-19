@@ -68,7 +68,7 @@
         <div id="toggle-stream"></div>
 
         <h4>Streaming output:</h4>
-        <div style="overflow-y: scroll; height:400px;">
+        <div style="overflow-y: scroll; height:200px; display: flex; flex-direction: column-reverse">
 
             <div id="log">
 
@@ -100,15 +100,12 @@
     if ({{ mic_list|safe }} != null) {
         add_microphone_buttons({{ mic_list|safe }});
     }
-
     function hasUpperLetter(t) {
         return t.toLowerCase() !== t;
     }
-
     function start_transcribing(){
-
         if ($("#stream-toogle").val() === "Stop streaming") {
-            var url = "{% url 'stop_streaming' %}";
+            var url = "{% url 'stop_real_time_streaming' %}";
             var data = new FormData();
             data.append('csrfmiddlewaretoken', "{{ csrf_token }}");
             $.ajax({
@@ -126,19 +123,19 @@
                 processData: false
             });
         } else {
-            var url = "{% url 'start_streaming' %}";
+            var url = "{% url 'start_real_time_streaming' %}";
             var iterating_test = "";
             var str_iterator = 0;
-
             $("#log").empty();
             $("#output").empty();
             let xmlhttp = new XMLHttpRequest();
             function updateProgress (oEvent) {
                 let p = document.createElement('p');
                 p.setAttribute("style", "margin: 0; padding: 0;");
+                console.log(oEvent.target.responseText)
                 var temp_text = oEvent.target.responseText.substr(str_iterator);
+                console.log(temp_text);
                 str_iterator += temp_text.length;
-
                 if (hasUpperLetter(temp_text)){
                     let text = document.createTextNode(temp_text);
                     p.appendChild(text);
@@ -151,16 +148,13 @@
                     p.appendChild(text);
                     document.getElementById('log').appendChild(p);
                 }
-
             }
             xmlhttp.addEventListener('progress', updateProgress, false);
             xmlhttp.open("get", url, true);
             xmlhttp.send();
-
             $("#stream-toogle").val("Stop streaming");
         }
     }
-
     function button_clicked(value) {
         var url = "{% url 'update_microphone' %}";
         var data = new FormData();
@@ -182,11 +176,8 @@
             contentType: false,
             processData: false
         });
-
     }
-
     function add_microphone_buttons(mic_list){
-
         for (i = 0; i < mic_list.length; i++) {
             console.log(mic_list[i]);
             var r = $('<input/>', { type: "button", value: mic_list[i][1], onclick: "button_clicked(" + mic_list[i][0] + ")"});
