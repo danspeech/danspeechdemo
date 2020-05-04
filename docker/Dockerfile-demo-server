@@ -19,6 +19,7 @@ RUN pip3 install torch==1.4
 RUN pip3 install danspeech
 RUN pip3 install django
 RUN pip3 install numba==0.48.0
+RUN pip3 install django-sslserver
 
 WORKDIR /workspace
 RUN git clone --recursive https://github.com/parlance/ctcdecode.git
@@ -28,22 +29,11 @@ RUN pip3 install .
 
 WORKDIR /workspace/danspeech/danspeechdemo
 COPY tmp/ /workspace/danspeech/danspeechdemo
-WORKDIR /workspace/danspeechdemo
-WORKDIR /workspace/danspeechdemo
+WORKDIR   /workspace/danspeech/danspeechdemo
 RUN pip3 install .
-WORKDIR /workspace/danspeechdemo/danspeechdemo
+WORKDIR /workspace/danspeech/danspeechdemo/danspeechdemo
 RUN sed -i 's/ALLOWED_HOSTS = \[\]/ALLOWED_HOSTS = \["127\.0\.0\.1", "0\.0\.0\.0", "localhost"\]/g' settings.py
+RUN sed -i 's/INSTALLED_APPS = \[/INSTALLED_APPS = \["sslserver",/g' settings.py
 RUN python3 manage.py  migrate
-
-WORKDIR /workspace/danspeechdemo/danspeechdemo/tmp
-WORKDIR /workspace/danspeechdemo
-RUN apt-get install -y curl
-
-# Run a single fetch of the main page to trigger download of
-# model files.
-COPY prime_danspeech_server.sh /workspace/danspeechdemo/
-RUN ./prime_danspeech_server.sh
-CMD python3 danspeechdemo/manage.py runserver 0.0.0.0:8000
-# COPY server_wrapper.py /workspace/danspeechdemo
-# CMD  /workspace/danspeechdemo/server_wrapper.py
+CMD python3 manage.py runsslserver 0.0.0.0:8000
 

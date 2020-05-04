@@ -8,6 +8,10 @@ WHOAMI=$(whoami)
 CONTAINERNAME=danspeech_demoserver
 TAGNAME="$WHOAMI/$CONTAINERNAME"
 
+
+##
+##  Copy all of the danspeech files into the demo server
+##
 rm -rf tmp
 mkdir tmp
 
