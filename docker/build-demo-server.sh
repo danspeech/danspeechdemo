@@ -8,13 +8,12 @@ WHOAMI=$(whoami)
 CONTAINERNAME=danspeech_demoserver
 TAGNAME="$WHOAMI/$CONTAINERNAME"
 
-if [[ -d tmp ]]  ; then
-    rm -rf tmp
-fi
+rm -rf tmp
+mkdir tmp
 
 
 for x in MANIFEST.in	README.md	danspeechdemo  setup.py ; do
-    cp -r $x tmp
+    cp -r ../$x tmp
 done    
 
 docker build --file="Dockerfile-demo-server" --tag "$TAGNAME" .
