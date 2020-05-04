@@ -1,0 +1,5 @@
+torch==1.4
+danspeech
+django
+numba==0.48.0
+django-sslserver
