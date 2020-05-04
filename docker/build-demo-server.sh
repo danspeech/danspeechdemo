@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Build a new .../deepspeech_torch image
+# Build a new danspeech demo server
 #
 
 WHOAMI=$(whoami)
@@ -20,4 +20,8 @@ for x in MANIFEST.in	README.md	danspeechdemo  setup.py ; do
     cp -r ../$x tmp
 done    
 
+
+##
+## Then build the container
+##
 docker build --file="Dockerfile-demo-server" --tag "$TAGNAME" .
