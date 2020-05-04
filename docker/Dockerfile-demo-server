@@ -6,34 +6,30 @@ RUN apt-get  clean
 RUN apt-get update -y
 RUN apt-get  -y install git
 RUN apt-get -y install apt-utils
-RUN apt-get install -y emacs
 RUN apt  install -y python3-pip
 RUN apt-get -y  install python
+RUN apt-get install -y ninja-build
 
 RUN apt-get install -y libasound-dev portaudio19-dev libportaudio2
 RUN apt-get install -y libsndfile1
 RUN apt-get install -y ffmpeg
 RUN pip3 install PyAudio
 
-RUN pip3 install torch==1.4
-RUN pip3 install danspeech
-RUN pip3 install django
-RUN pip3 install numba==0.48.0
-RUN pip3 install django-sslserver
+WORKDIR /workspace
+COPY requirements.txt /workspace/
+RUN pip3 install -r requirements.txt
 
 WORKDIR /workspace
 RUN git clone --recursive https://github.com/parlance/ctcdecode.git
 WORKDIR /workspace/ctcdecode
-RUN apt-get install -y ninja-build
 RUN pip3 install .
 
 WORKDIR /workspace/danspeech/danspeechdemo
 COPY tmp/ /workspace/danspeech/danspeechdemo
-WORKDIR   /workspace/danspeech/danspeechdemo
+COPY docker_settings.py  /workspace/danspeech/danspeechdemo/danspeechdemo
 RUN pip3 install .
+
 WORKDIR /workspace/danspeech/danspeechdemo/danspeechdemo
-RUN sed -i 's/ALLOWED_HOSTS = \[\]/ALLOWED_HOSTS = \["127\.0\.0\.1", "0\.0\.0\.0", "localhost"\]/g' settings.py
-RUN sed -i 's/INSTALLED_APPS = \[/INSTALLED_APPS = \["sslserver",/g' settings.py
-RUN python3 manage.py  migrate
-CMD python3 manage.py runsslserver 0.0.0.0:8000
+RUN python3 manage.py migrate
+CMD python3 manage.py runsslserver --settings=docker_settings  0.0.0.0:8000
 
