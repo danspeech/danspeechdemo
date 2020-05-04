@@ -1,0 +1,49 @@
+FROM ubuntu:18.04
+
+EXPOSE 8000/tcp
+
+RUN apt-get  clean
+RUN apt-get update -y
+RUN apt-get  -y install git
+RUN apt-get -y install apt-utils
+RUN apt-get install -y emacs
+RUN apt  install -y python3-pip
+RUN apt-get -y  install python
+
+RUN apt-get install -y libasound-dev portaudio19-dev libportaudio2
+RUN apt-get install -y libsndfile1
+RUN apt-get install -y ffmpeg
+RUN pip3 install PyAudio
+
+RUN pip3 install torch==1.4
+RUN pip3 install danspeech
+RUN pip3 install django
+RUN pip3 install numba==0.48.0
+
+WORKDIR /workspace
+RUN git clone --recursive https://github.com/parlance/ctcdecode.git
+WORKDIR /workspace/ctcdecode
+RUN apt-get install -y ninja-build
+RUN pip3 install .
+
+WORKDIR /workspace/danspeech/danspeechdemo
+COPY tmp/ /workspace/danspeech/danspeechdemo
+WORKDIR /workspace/danspeechdemo
+WORKDIR /workspace/danspeechdemo
+RUN pip3 install .
+WORKDIR /workspace/danspeechdemo/danspeechdemo
+RUN sed -i 's/ALLOWED_HOSTS = \[\]/ALLOWED_HOSTS = \["127\.0\.0\.1", "0\.0\.0\.0", "localhost"\]/g' settings.py
+RUN python3 manage.py  migrate
+
+WORKDIR /workspace/danspeechdemo/danspeechdemo/tmp
+WORKDIR /workspace/danspeechdemo
+RUN apt-get install -y curl
+
+# Run a single fetch of the main page to trigger download of
+# model files.
+COPY prime_danspeech_server.sh /workspace/danspeechdemo/
+RUN ./prime_danspeech_server.sh
+CMD python3 danspeechdemo/manage.py runserver 0.0.0.0:8000
+# COPY server_wrapper.py /workspace/danspeechdemo
+# CMD  /workspace/danspeechdemo/server_wrapper.py
+
