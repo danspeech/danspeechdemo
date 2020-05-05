@@ -24,4 +24,4 @@ done
 ##
 ## Then build the container
 ##
-docker build --file="Dockerfile-demo-server" --tag "$TAGNAME" .
+docker build --file="Dockerfile" --tag "$TAGNAME" .
