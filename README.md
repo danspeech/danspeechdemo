@@ -43,7 +43,7 @@ These features will be added as soon as possible.
 
 ## Authors and acknowledgment
 Main authors: 
-* Martin Carsten Nielsen  ([mcnielsen4270@gmail.com](mcnielsen4270@gmail.com))
+* Martin Nielsen  ([martin4270@hotmail.com](martin4270@hotmail.com))
 * Rasmus Arpe Fogh Jensen ([rasmus.arpe@gmail.com](rasmus.arpe@gmail.com))
 
 This project is supported by Innovation Foundation Denmark through the projects DABAI and ATEL
